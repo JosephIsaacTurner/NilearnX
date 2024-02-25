@@ -1,0 +1,12 @@
+tqdm
+nilearn
+numpy
+scipy
+scikit-learn
+pandas
+matplotlib
+seaborn
+nibabel
+joblib
+nitime
+statsmodels
