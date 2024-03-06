@@ -1,5 +1,14 @@
 import nibabel as nib
 import numpy as np
+from . import labeling
+import os
+
+# Get the directory in which the current script is located
+current_dir = os.path.dirname(__file__)
+# parent_dir = os.path.dirname(current_dir)
+
+# Construct the path to the 'atlases' directory
+atlases_dir = os.path.join(current_dir, 'atlas_data')
 
 class Coordinate2mm:
     def __init__(self, coord=None, coord_space='voxel'):
@@ -46,18 +55,18 @@ class Coordinate2mm:
         else:
             return self.mni_to_voxel_space(self.coord)
     
-    # @property
-    # def anatomical_name(self):
-    #     """Returns the anatomical name at the peak coordinate"""
-    #     index = self.voxel_space_coord
-    #     atlas_cort_name = [Atlas(os.path.join(atlases_dir, "HarvardOxford-cort-maxprob-thr0-2mm.nii.gz")).name_at_index(index)]
-    #     atlas_sub_name = [Atlas(os.path.join(atlases_dir, "HarvardOxford-sub-maxprob-thr0-2mm.nii.gz")).name_at_index(index)]
-    #     results = [x for x in list(set(atlas_cort_name + atlas_sub_name)) if x != 'No matching region found']
-    #     if len(results) == 0:
-    #         return "No matching region found"
-    #     elif len(results) == 1:
-    #         return results[0]
-    #     return results
+    @property
+    def anatomical_name(self):
+        """Returns the anatomical name at the peak coordinate"""
+        index = self.voxel_space_coord
+        atlas_cort_name = [labeling.Atlas(os.path.join(atlases_dir, "HarvardOxford-cort-maxprob-thr0-2mm.nii.gz")).name_at_index(index)]
+        atlas_sub_name = [labeling.Atlas(os.path.join(atlases_dir, "HarvardOxford-sub-maxprob-thr0-2mm.nii.gz")).name_at_index(index)]
+        results = [x for x in list(set(atlas_cort_name + atlas_sub_name)) if x != 'No matching region found']
+        if len(results) == 0:
+            return "No matching region found"
+        elif len(results) == 1:
+            return results[0]
+        return results
 
     def mni_to_voxel_space(self, world_coord=None):
         """
