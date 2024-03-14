@@ -8,10 +8,11 @@ from scipy import ndimage as ndi
 # from scipy.ndimage import zoom, measurements
 from scipy.stats import rankdata
 import pandas as pd
+# from nilearnx.datasets import load_mni152_brain_maskX
 
 current_dir = os.path.dirname(__file__)
 atlases_dir = os.path.join(current_dir, 'atlas_data')
-mni_mask_path = os.path.join(atlases_dir, 'mni152_2mm_brain_mask.nii.gz')
+mni_mask_path = os.path.join(atlases_dir, 'MNI152_T1_2mm_brain_mask.nii.gz')
 
 def get_mni_mask():
     """Return the MNI152 brain mask as a NIfTI image."""
