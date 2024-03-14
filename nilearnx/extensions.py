@@ -6,12 +6,12 @@ from .coordinates import Coordinate2mm
 import os
 from scipy import ndimage as ndi
 # from scipy.ndimage import zoom, measurements
-# from scipy.stats import rankdata
+from scipy.stats import rankdata
 import pandas as pd
 
 current_dir = os.path.dirname(__file__)
 atlases_dir = os.path.join(current_dir, 'atlas_data')
-mni_mask_path = os.path.join(atlases_dir, 'MNI152_T1_2mm_brain_mask.nii.gz')
+mni_mask_path = os.path.join(atlases_dir, 'mni152_2mm_brain_mask.nii.gz')
 
 def get_mni_mask():
     """Return the MNI152 brain mask as a NIfTI image."""
@@ -288,3 +288,38 @@ def correlate_img_with_list(img, img_list):
     img_list_data = [img.get_fdata() for img in img_list]
     correlations = [np.corrcoef(img_data.ravel(), img_list_data[i].ravel())[0, 1] for i in range(len(img_list_data))]
     return correlations
+
+def normalize_to_quantile(img):
+    """
+    Transforms the values of a NIfTI object into their corresponding quantile scores, 
+    effectively normalizing the distribution of values.
+    Args:
+        img (Nifti1Image, path to such an image): The input NIfTI image to be normalized.
+
+    Raises:
+        ValueError: If there's a shape mismatch between the input and output data, indicating an error in 
+            processing or data handling.
+
+    Returns:
+        img (Nifti1Image): The input NIfTI image with its values transformed to quantile scores.
+    """
+    img = apply_mni_mask_fast(img)
+    nd_array = img.get_fdata()
+    original_shape = nd_array.shape
+    
+    # Mask finite values
+    finite_mask = np.isfinite(nd_array)
+
+    # Flatten finite values and calculate quantile scores
+    data_flat = nd_array[finite_mask].flatten()
+    data_ranked = rankdata(data_flat)
+    data_quantile_scores = data_ranked / len(data_ranked)
+
+    # Initialize output array with NaNs and populate with quantile scores
+    output_array = np.full_like(nd_array, np.nan, dtype=np.float64)
+    output_array[finite_mask] = data_quantile_scores
+
+    img = image.new_img_like(img, output_array, affine=img.affine, copy_header=True)
+    if img.get_fdata().shape != original_shape:
+        raise ValueError("Shape mismatch between input and output data")
+    return img
